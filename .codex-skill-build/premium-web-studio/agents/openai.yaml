@@ -1,0 +1,4 @@
+interface:
+  display_name: "Premium Web Studio"
+  short_description: "Design and build ultra-premium websites"
+  default_prompt: "Use $premium-web-studio to create an ultra-premium website from concept to launch."

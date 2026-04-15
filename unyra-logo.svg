@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="170" viewBox="0 0 520 170" fill="none">
+  <path
+    d="M34 26H64V102.5L93 120.5L122 103V134.5L94.5 151L34 115.5V26Z"
+    fill="#132B3B"
+  />
+  <path
+    d="M81 61.5L114.5 41.5V103L81 83V61.5Z"
+    fill="#6D8F89"
+  />
+  <path
+    d="M121.5 42L155 22V102L121.5 122V42Z"
+    fill="#B59A5E"
+  />
+  <text
+    x="188"
+    y="78"
+    fill="#2A313B"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="54"
+    font-weight="700"
+    letter-spacing="6"
+  >
+    UNYRA
+  </text>
+  <text
+    x="192"
+    y="126"
+    fill="#2A313B"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="24"
+    font-weight="700"
+    letter-spacing="8"
+  >
+    GROUP LLC
+  </text>
+</svg>

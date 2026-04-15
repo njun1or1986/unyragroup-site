@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#0D1014"/>
+  <circle cx="182" cy="124" r="210" fill="#C89E6E" fill-opacity="0.22"/>
+  <circle cx="1036" cy="468" r="250" fill="#506274" fill-opacity="0.16"/>
+  <rect x="68" y="62" width="1064" height="506" rx="36" fill="url(#paint0_linear)" stroke="#FFFFFF" stroke-opacity="0.1"/>
+
+  <image href="unyra-logo.svg" x="106" y="102" width="316" height="104" preserveAspectRatio="xMinYMid meet"/>
+
+  <g opacity="0.25">
+    <circle cx="824" cy="286" r="152" stroke="#FFFFFF" stroke-opacity="0.28"/>
+    <ellipse cx="824" cy="286" rx="152" ry="62" stroke="#FFFFFF" stroke-opacity="0.18"/>
+    <ellipse cx="824" cy="286" rx="152" ry="102" stroke="#FFFFFF" stroke-opacity="0.18"/>
+    <ellipse cx="824" cy="286" rx="56" ry="152" stroke="#FFFFFF" stroke-opacity="0.18"/>
+    <ellipse cx="824" cy="286" rx="96" ry="152" stroke="#FFFFFF" stroke-opacity="0.18"/>
+    <path d="M698 294C748 214 834 185 922 207C982 222 1026 214 1071 170" stroke="url(#paint2_linear)" stroke-width="3" stroke-linecap="round" stroke-dasharray="12 10"/>
+    <path d="M706 354C780 392 864 396 944 360C1002 334 1041 346 1082 382" stroke="url(#paint2_linear)" stroke-width="3" stroke-linecap="round" stroke-dasharray="12 10"/>
+    <circle cx="698" cy="294" r="7" fill="#F1D1AB"/>
+    <circle cx="1071" cy="170" r="7" fill="#F1D1AB"/>
+    <circle cx="1082" cy="382" r="7" fill="#F1D1AB"/>
+  </g>
+
+  <text x="108" y="250" fill="#F7F4EE" font-size="72" font-family="Arial, sans-serif" font-weight="700" letter-spacing="-2">
+    Global Trading.
+  </text>
+  <text x="108" y="330" fill="#F7F4EE" font-size="72" font-family="Arial, sans-serif" font-weight="700" letter-spacing="-2">
+    Strategic Connections.
+  </text>
+  <text x="108" y="410" fill="#F7F4EE" font-size="72" font-family="Arial, sans-serif" font-weight="700" letter-spacing="-2">
+    Real Execution.
+  </text>
+  <text x="108" y="490" fill="#C8B9A7" font-size="28" font-family="Arial, sans-serif">
+    Orlando, Florida | Global trading, sourcing, and market access
+  </text>
+
+  <defs>
+    <linearGradient id="paint0_linear" x1="68" y1="62" x2="1056" y2="566" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12161C"/>
+      <stop offset="0.58" stop-color="#171C24"/>
+      <stop offset="1" stop-color="#1B1F26"/>
+    </linearGradient>
+    <linearGradient id="paint2_linear" x1="698" y1="170" x2="1082" y2="382" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1D1AB"/>
+      <stop offset="1" stop-color="#8692A0"/>
+    </linearGradient>
+  </defs>
+</svg>
