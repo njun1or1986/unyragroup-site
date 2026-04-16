@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+snapshots
+wordpress-theme
+research
+.DS_Store
+*.tar.gz
+index.html
+script.js
+styles.css
+social-preview.svg
+unyra-logo.svg
+favicon.svg
