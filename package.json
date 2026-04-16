@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "latest",
     "lucide-react": "latest",
     "next": "latest",
@@ -23,4 +24,3 @@
     "typescript": "latest"
   }
 }
-
