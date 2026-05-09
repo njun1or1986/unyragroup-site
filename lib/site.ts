@@ -138,7 +138,7 @@ export const marketCoordinates: Record<MarketKey, { x: number; y: number }> = {
 export const company = {
   name: "Unyra Group LLC",
   legalName: "Unyra Group LLC",
-  url: "https://unyragroup.com",
+  url: "https://www.unyragroup.com",
   tagline: "Connecting Markets. Building Trust. Delivering Value.",
   experienceBadge: "20+ years",
   description:
@@ -254,6 +254,7 @@ export type Dictionary = {
     submit: string;
     sending: string;
     success: string;
+    reviewMessage: string;
     error: string;
     redirecting: string;
     privacyNote: string;
@@ -282,6 +283,7 @@ export type Dictionary = {
       required: string;
       email: string;
       messageLength: string;
+      invalidSelection: string;
     };
   };
   home: {

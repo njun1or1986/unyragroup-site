@@ -73,6 +73,7 @@ export function buildStructuredData(
 ) {
   const url = `${company.url}${getPath(locale, pageKey)}`;
   const page = dictionary.metadata[pageKey];
+  const localizedCompanyDescription = dictionary.metadata.home.description;
   const result: Array<Record<string, unknown>> = [];
 
   result.push({
@@ -81,7 +82,7 @@ export function buildStructuredData(
     name: company.name,
     legalName: company.legalName,
     url: company.url,
-    description: company.description,
+    description: localizedCompanyDescription,
     slogan: dictionary.labels.tagline,
     logo: `${company.url}${company.logoAsset}`,
     email: company.contact.companyEmail,
@@ -103,13 +104,13 @@ export function buildStructuredData(
 
   if (pageKey === "home") {
     result.push({
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: company.name,
-      url: company.url,
-      description: company.description,
-      inLanguage: localeMeta[locale].languageTag
-    });
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: company.name,
+        url: company.url,
+        description: localizedCompanyDescription,
+        inLanguage: localeMeta[locale].languageTag
+      });
   }
 
   result.push({

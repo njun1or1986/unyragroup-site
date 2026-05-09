@@ -22,7 +22,20 @@ type FormValues = {
   website: string;
 };
 
-type FormErrors = Partial<Record<keyof Omit<FormValues, "website">, string>>;
+type FormFieldKey = keyof Omit<FormValues, "website">;
+type FormErrors = Partial<Record<FormFieldKey, string>>;
+
+type ContactResponse = {
+  ok: boolean;
+  code?: "invalid_payload" | "validation_failed" | "delivery_failed";
+  message?: string;
+  errors?: Partial<
+    Record<
+      FormFieldKey | "locale" | "source",
+      "required" | "invalid_email" | "message_too_short" | "invalid_option" | "invalid_context"
+    >
+  >;
+};
 
 const initialValues: FormValues = {
   fullName: "",
@@ -36,8 +49,64 @@ const initialValues: FormValues = {
   website: ""
 };
 
+const formFieldKeys = [
+  "fullName",
+  "company",
+  "email",
+  "phone",
+  "country",
+  "role",
+  "interest",
+  "message"
+] as const satisfies FormFieldKey[];
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isFormFieldKey(value: string): value is FormFieldKey {
+  return formFieldKeys.includes(value as FormFieldKey);
+}
+
+function mapServerError(
+  errorCode:
+    | "required"
+    | "invalid_email"
+    | "message_too_short"
+    | "invalid_option"
+    | "invalid_context",
+  copy: Dictionary["form"]["validation"]
+) {
+  switch (errorCode) {
+    case "required":
+      return copy.required;
+    case "invalid_email":
+      return copy.email;
+    case "message_too_short":
+      return copy.messageLength;
+    case "invalid_option":
+    case "invalid_context":
+      return copy.invalidSelection;
+    default:
+      return copy.required;
+  }
+}
+
+function mapServerErrors(
+  serverErrors: NonNullable<ContactResponse["errors"]>,
+  copy: Dictionary["form"]["validation"]
+) {
+  const nextErrors: FormErrors = {};
+
+  for (const [field, errorCode] of Object.entries(serverErrors)) {
+    if (!errorCode || !isFormFieldKey(field)) {
+      continue;
+    }
+
+    nextErrors[field] = mapServerError(errorCode, copy);
+  }
+
+  return nextErrors;
 }
 
 export default function ContactForm({
@@ -51,6 +120,7 @@ export default function ContactForm({
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">(
     "idle"
   );
+  const [feedback, setFeedback] = useState("");
 
   const messageLength = values.message.trim().length;
 
@@ -103,6 +173,7 @@ export default function ContactForm({
     setValues((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
     setStatus("idle");
+    setFeedback("");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -112,10 +183,12 @@ export default function ContactForm({
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
       setStatus("error");
+      setFeedback(copy.reviewMessage);
       return;
     }
 
     setStatus("sending");
+    setFeedback("");
 
     try {
       const response = await fetch("/api/contact", {
@@ -130,13 +203,23 @@ export default function ContactForm({
         })
       });
 
+      const result = (await response.json().catch(() => null)) as ContactResponse | null;
+
       if (!response.ok) {
-        throw new Error("Contact submission failed");
+        if (response.status === 400 && result?.errors) {
+          setErrors(mapServerErrors(result.errors, copy.validation));
+          setStatus("error");
+          setFeedback(copy.reviewMessage);
+          return;
+        }
+
+        throw new Error(result?.message ?? "Contact submission failed");
       }
 
       setStatus("success");
       setValues(initialValues);
       setErrors({});
+      setFeedback(`${copy.success} ${copy.redirecting}`);
 
       window.setTimeout(() => {
         startTransition(() => {
@@ -145,23 +228,23 @@ export default function ContactForm({
       }, 900);
     } catch {
       setStatus("error");
+      setFeedback(copy.error);
     }
   }
 
-  const statusMessage =
-    status === "success"
-      ? `${copy.success} ${copy.redirecting}`
-      : status === "error"
-        ? copy.error
-        : "";
-
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+    <form className="grid gap-5" onSubmit={handleSubmit} noValidate aria-busy={status === "sending"}>
       <div className="grid gap-5 md:grid-cols-2">
         {fields.map((field) => {
           const label = copy.labels[field.key];
           const placeholder = copy.placeholders[field.key];
           const error = errors[field.key];
+          const inputMode =
+            field.key === "email"
+              ? "email"
+              : field.key === "phone"
+                ? "tel"
+                : undefined;
 
           return (
             <label key={field.key} className="grid gap-2 text-sm font-medium text-white/82">
@@ -173,6 +256,9 @@ export default function ContactForm({
                 onChange={handleChange}
                 placeholder={placeholder}
                 autoComplete={field.autoComplete}
+                inputMode={inputMode}
+                required
+                disabled={status === "sending"}
                 aria-invalid={Boolean(error)}
                 aria-describedby={error ? `${field.key}-error` : undefined}
                 className={`form-field ${error ? "form-field-error" : ""}`}
@@ -194,6 +280,8 @@ export default function ContactForm({
             name="role"
             value={values.role}
             onChange={handleChange}
+            required
+            disabled={status === "sending"}
             aria-invalid={Boolean(errors.role)}
             aria-describedby={errors.role ? "role-error" : undefined}
             className={`form-field ${errors.role ? "form-field-error" : ""}`}
@@ -218,6 +306,8 @@ export default function ContactForm({
             name="interest"
             value={values.interest}
             onChange={handleChange}
+            required
+            disabled={status === "sending"}
             aria-invalid={Boolean(errors.interest)}
             aria-describedby={errors.interest ? "interest-error" : undefined}
             className={`form-field ${errors.interest ? "form-field-error" : ""}`}
@@ -244,6 +334,9 @@ export default function ContactForm({
           value={values.message}
           onChange={handleChange}
           placeholder={copy.placeholders.message}
+          required
+          minLength={20}
+          disabled={status === "sending"}
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? "message-error" : "message-hint"}
           className={`form-field min-h-40 resize-y ${errors.message ? "form-field-error" : ""}`}
@@ -269,6 +362,7 @@ export default function ContactForm({
         onChange={handleChange}
         tabIndex={-1}
         autoComplete="off"
+        disabled={status === "sending"}
         className="hidden"
       />
 
@@ -284,7 +378,7 @@ export default function ContactForm({
       </div>
 
       <div className="min-h-6" aria-live="polite">
-        {statusMessage ? <p className="text-sm text-white/82">{statusMessage}</p> : null}
+        {feedback ? <p className="text-sm text-white/82">{feedback}</p> : null}
       </div>
     </form>
   );

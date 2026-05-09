@@ -2,6 +2,21 @@
 
 Premium multilingual corporate website for `UnyraGroup.com`, built with Next.js App Router, TypeScript, and Tailwind CSS.
 
+## Project Admin
+
+Operational and restore documentation is now organized in:
+
+- `UNYRA-WEBSITE-START-HERE.md`
+- `project-admin/README.md`
+- `project-admin/DEPLOYMENT-AND-DOMAINS.md`
+- `project-admin/RESTORE-AND-CHECKPOINTS.md`
+
+## Current Production
+
+- Canonical domain: `https://www.unyragroup.com`
+- Non-www domain: `https://unyragroup.com` redirects to the canonical `www` domain
+- Vercel production project: `unyragroup-site`
+
 ## Stack
 
 - Next.js 16 App Router
@@ -70,6 +85,13 @@ If `CONTACT_PROVIDER` is not set, the route automatically falls back to:
 2. `resend` when `RESEND_API_KEY` is defined
 3. `console` otherwise
 
+Recommended setup for Unyra:
+
+- `CONTACT_FORM_TO=sales@unyragroup.com`
+- `CONTACT_FORM_FROM=website@unyragroup.com`
+- Leave `CONTACT_PROVIDER` unset so the route automatically switches to Resend when `RESEND_API_KEY` is present
+- Verify the `unyragroup.com` sender in Resend before going live
+
 ## SEO and Structured Data
 
 The site includes:
@@ -88,7 +110,7 @@ Update these placeholders before publishing:
 - `.env.local`
   Configure Resend or webhook delivery for the contact form
 - `lib/site.ts`
-  Confirm the production domain if it changes from `https://unyragroup.com`
+  Confirm the production domain if it changes from `https://www.unyragroup.com`
 - `app/api/contact/route.ts`
   Extend delivery logic only if you want an additional provider beyond Resend or webhook
 - `messages/*.ts`

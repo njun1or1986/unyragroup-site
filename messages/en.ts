@@ -92,8 +92,10 @@ const en: Dictionary = {
     sending: "Sending...",
     success:
       "Your inquiry was submitted successfully. We are preparing your next step.",
+    reviewMessage:
+      "Please review the highlighted fields and complete any missing or invalid information.",
     error:
-      "We could not submit your inquiry right now. Please try again or update the integration settings.",
+      "We could not send your inquiry right now. Please try again in a moment or contact our team directly at sales@unyragroup.com.",
     redirecting: "Redirecting to the confirmation page...",
     privacyNote:
       "By submitting this form, you agree to be contacted regarding your inquiry and acknowledge the privacy policy.",
@@ -132,7 +134,8 @@ const en: Dictionary = {
     validation: {
       required: "Please complete this field.",
       email: "Please enter a valid business email address.",
-      messageLength: "Please provide at least 20 characters in your message."
+      messageLength: "Please provide at least 20 characters in your message.",
+      invalidSelection: "Please choose a valid option."
     }
   },
   home: {

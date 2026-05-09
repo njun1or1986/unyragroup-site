@@ -94,8 +94,10 @@ const es: Dictionary = {
     sending: "Enviando...",
     success:
       "Su consulta se envió correctamente. Estamos preparando el siguiente paso.",
+    reviewMessage:
+      "Revise los campos destacados y complete cualquier información faltante o inválida.",
     error:
-      "No pudimos enviar su consulta en este momento. Inténtelo nuevamente o revise la configuración de integración.",
+      "No pudimos enviar su consulta en este momento. Inténtelo nuevamente en unos instantes o contacte directamente a nuestro equipo en sales@unyragroup.com.",
     redirecting: "Redirigiendo a la página de confirmación...",
     privacyNote:
       "Al enviar este formulario, usted acepta ser contactado en relación con su consulta y reconoce la política de privacidad.",
@@ -134,7 +136,8 @@ const es: Dictionary = {
     validation: {
       required: "Complete este campo.",
       email: "Ingrese un correo comercial válido.",
-      messageLength: "Escriba al menos 20 caracteres en su mensaje."
+      messageLength: "Escriba al menos 20 caracteres en su mensaje.",
+      invalidSelection: "Seleccione una opción válida."
     }
   },
   home: {

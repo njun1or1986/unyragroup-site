@@ -170,6 +170,7 @@ export default function SiteShell({
                       icon={item.icon}
                       label={item.title}
                       value={item.value}
+                      href={item.href}
                     />
                   ))}
                 </div>
@@ -953,7 +954,16 @@ function ContactContent({
               <h3 className="font-display mt-5 text-[1.2rem] font-semibold tracking-[-0.03em] text-[var(--ink)]">
                 {item.title}
               </h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.value}</p>
+              {item.href ? (
+                <a
+                  href={item.href}
+                  className="mt-3 inline-flex text-sm leading-7 text-[var(--muted)] underline decoration-[rgba(10,22,34,0.18)] underline-offset-4 transition-colors hover:text-[var(--ink)]"
+                >
+                  {item.value}
+                </a>
+              ) : (
+                <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.value}</p>
+              )}
             </article>
           ))}
         </div>
@@ -1279,14 +1289,23 @@ function SimpleCtaBand({
   );
 }
 
+type LocalizedContactItem = {
+  title: string;
+  value: string;
+  href?: string;
+  icon: typeof Mail;
+};
+
 function ContactLine({
   icon: Icon,
   label,
-  value
+  value,
+  href
 }: {
   icon: typeof Mail;
   label: string;
   value: string;
+  href?: string;
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -1297,7 +1316,16 @@ function ContactLine({
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
           {label}
         </p>
-        <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">{value}</p>
+        {href ? (
+          <a
+            href={href}
+            className="mt-1 inline-flex text-sm leading-6 text-[var(--muted-strong)] underline decoration-[rgba(10,22,34,0.16)] underline-offset-4 transition-colors hover:text-[var(--ink)]"
+          >
+            {value}
+          </a>
+        ) : (
+          <p className="mt-1 text-sm leading-6 text-[var(--muted-strong)]">{value}</p>
+        )}
       </div>
     </div>
   );
@@ -1308,11 +1336,13 @@ function getLocalizedContactItems(dictionary: Dictionary) {
     {
       title: dictionary.contact.contactCards[0]?.title ?? company.contact.companyEmailLabel,
       value: company.contact.companyEmail,
+      href: `mailto:${company.contact.companyEmail}`,
       icon: Mail
     },
     {
       title: dictionary.contact.contactCards[1]?.title ?? company.contact.phoneLabel,
       value: company.contact.phoneDisplay,
+      href: company.contact.phoneHref,
       icon: Phone
     },
     {
@@ -1320,5 +1350,5 @@ function getLocalizedContactItems(dictionary: Dictionary) {
       value: company.contact.location,
       icon: MapPin
     }
-  ] as const;
+  ] satisfies LocalizedContactItem[];
 }

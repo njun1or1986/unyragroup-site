@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { company, locales, pageOrder, type Locale, type PageKey } from "@/lib/site";
 
 type SubmissionPayload = {
@@ -13,6 +14,19 @@ type SubmissionPayload = {
   website?: string;
   locale: Locale;
   source: PageKey;
+};
+
+type ValidationErrorCode =
+  | "required"
+  | "invalid_email"
+  | "message_too_short"
+  | "invalid_option"
+  | "invalid_context";
+
+type DeliveryResult = {
+  reference: string;
+  provider: "webhook" | "resend" | "console";
+  externalId?: string;
 };
 
 export const runtime = "nodejs";
@@ -34,7 +48,7 @@ function isValidEmail(value: string) {
 }
 
 function createFieldErrors(payload: Record<string, unknown>) {
-  const errors: Record<string, string> = {};
+  const errors: Record<string, ValidationErrorCode> = {};
 
   const requiredFields = [
     "fullName",
@@ -49,38 +63,38 @@ function createFieldErrors(payload: Record<string, unknown>) {
 
   for (const field of requiredFields) {
     if (!clean(payload[field])) {
-      errors[field] = "Required";
+      errors[field] = "required";
     }
   }
 
   const email = clean(payload.email);
   if (email && !isValidEmail(email)) {
-    errors.email = "Invalid email";
+    errors.email = "invalid_email";
   }
 
   const message = clean(payload.message);
   if (message && message.length < 20) {
-    errors.message = "Message is too short";
+    errors.message = "message_too_short";
   }
 
   const role = clean(payload.role);
   if (role && !roleValues.has(role)) {
-    errors.role = "Invalid role";
+    errors.role = "invalid_option";
   }
 
   const interest = clean(payload.interest);
   if (interest && !interestValues.has(interest)) {
-    errors.interest = "Invalid interest";
+    errors.interest = "invalid_option";
   }
 
   const locale = clean(payload.locale);
   if (locale && !locales.includes(locale as Locale)) {
-    errors.locale = "Invalid locale";
+    errors.locale = "invalid_context";
   }
 
   const source = clean(payload.source);
   if (source && !pageOrder.includes(source as PageKey)) {
-    errors.source = "Invalid source";
+    errors.source = "invalid_context";
   }
 
   return errors;
@@ -102,11 +116,18 @@ function normalizePayload(raw: Record<string, unknown>): SubmissionPayload {
   };
 }
 
-function buildMessage(submission: SubmissionPayload) {
+function buildReference() {
+  const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 12);
+  const suffix = randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
+  return `UNY-${timestamp}-${suffix}`;
+}
+
+function buildMessage(submission: SubmissionPayload, reference: string, submittedAt: string) {
   return [
     "Unyra Group LLC website inquiry",
     "",
-    `Submitted: ${new Date().toISOString()}`,
+    `Inquiry Reference: ${reference}`,
+    `Submitted: ${submittedAt}`,
     `Locale: ${submission.locale}`,
     `Source page: ${submission.source}`,
     "",
@@ -123,6 +144,77 @@ function buildMessage(submission: SubmissionPayload) {
   ].join("\n");
 }
 
+function buildHtmlMessage(submission: SubmissionPayload, reference: string, submittedAt: string) {
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+
+  const rows = [
+    ["Inquiry Reference", reference],
+    ["Submitted", submittedAt],
+    ["Locale", submission.locale],
+    ["Source page", submission.source],
+    ["Full Name", submission.fullName],
+    ["Company", submission.company],
+    ["Email", submission.email],
+    ["Phone / WhatsApp", submission.phone],
+    ["Country", submission.country],
+    ["Role", submission.role],
+    ["Interest", submission.interest]
+  ]
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:10px 14px;border:1px solid #d7dce4;background:#f7f9fc;font-weight:600;">${escapeHtml(label)}</td><td style="padding:10px 14px;border:1px solid #d7dce4;">${escapeHtml(value)}</td></tr>`
+    )
+    .join("");
+
+  return `
+    <div style="background:#f4f6fa;padding:32px 16px;font-family:Arial,sans-serif;color:#101828;">
+      <div style="max-width:720px;margin:0 auto;background:#ffffff;border:1px solid #d7dce4;border-radius:18px;overflow:hidden;">
+        <div style="padding:28px 32px;background:#0f2233;color:#ffffff;">
+          <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#c2a071;">Unyra Group LLC</p>
+          <h1 style="margin:0;font-size:24px;line-height:1.2;">New website inquiry</h1>
+          <p style="margin:14px 0 0;font-size:13px;letter-spacing:0.14em;text-transform:uppercase;color:#d8e4f0;">Reference ${escapeHtml(reference)}</p>
+        </div>
+        <div style="padding:28px 32px;">
+          <p style="margin:0 0 18px;font-size:15px;line-height:1.7;">A new qualified inquiry was submitted through the Unyra website.</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin:0 0 20px;">
+            <tbody>${rows}</tbody>
+          </table>
+          <div style="padding:18px 20px;border-radius:14px;background:#f7f9fc;border:1px solid #d7dce4;">
+            <p style="margin:0 0 10px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#667085;">Message</p>
+            <p style="margin:0;font-size:15px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(submission.message)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function resolveReplyTo(submission: SubmissionPayload) {
+  return submission.email;
+}
+
+function resolveFromAddress(configuredFrom: string, configuredTo: string) {
+  const normalizedFrom = configuredFrom.trim().toLowerCase();
+  const normalizedTo = configuredTo.trim().toLowerCase();
+  const fallbackDomain =
+    configuredTo.split("@")[1] || configuredFrom.split("@")[1] || company.contact.companyEmail.split("@")[1];
+  const fallbackAddress = `website@${fallbackDomain}`;
+  const safeAddress =
+    !configuredFrom || normalizedFrom === normalizedTo ? fallbackAddress : configuredFrom.trim();
+
+  if (safeAddress.includes("<")) {
+    return safeAddress;
+  }
+
+  return `${company.name} Website <${safeAddress}>`;
+}
+
 async function deliverSubmission(submission: SubmissionPayload) {
   const provider =
     process.env.CONTACT_PROVIDER ??
@@ -132,8 +224,11 @@ async function deliverSubmission(submission: SubmissionPayload) {
         ? "resend"
         : "console");
 
-  const subject = `${process.env.CONTACT_SUBJECT_PREFIX ?? "[Unyra Inquiry]"} ${submission.company} - ${submission.fullName}`;
-  const text = buildMessage(submission);
+  const reference = buildReference();
+  const submittedAt = new Date().toISOString();
+  const subject = `${process.env.CONTACT_SUBJECT_PREFIX ?? "[Unyra Inquiry]"} ${reference} | ${submission.company} - ${submission.fullName}`;
+  const text = buildMessage(submission, reference, submittedAt);
+  const html = buildHtmlMessage(submission, reference, submittedAt);
 
   if (provider === "webhook") {
     const webhookUrl = process.env.CONTACT_FORM_WEBHOOK_URL;
@@ -149,6 +244,7 @@ async function deliverSubmission(submission: SubmissionPayload) {
       },
       body: JSON.stringify({
         subject,
+        reference,
         company: company.name,
         submission
       })
@@ -158,7 +254,10 @@ async function deliverSubmission(submission: SubmissionPayload) {
       throw new Error(`Webhook delivery failed with status ${response.status}.`);
     }
 
-    return;
+    return {
+      reference,
+      provider: "webhook"
+    } satisfies DeliveryResult;
   }
 
   if (provider === "resend") {
@@ -172,6 +271,9 @@ async function deliverSubmission(submission: SubmissionPayload) {
       );
     }
 
+    const resolvedFrom = resolveFromAddress(from, to);
+    const replyTo = resolveReplyTo(submission);
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -179,26 +281,62 @@ async function deliverSubmission(submission: SubmissionPayload) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from,
-        to,
-        reply_to: submission.email,
+        from: resolvedFrom,
+        to: [to],
+        reply_to: replyTo,
         subject,
-        text
+        text,
+        html,
+        tags: [
+          { name: "source", value: submission.source },
+          { name: "locale", value: submission.locale }
+        ]
       })
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      throw new Error(`Resend delivery failed with status ${response.status}.`);
+      throw new Error(
+        `Resend delivery failed with status ${response.status}. Response: ${responseText}`
+      );
     }
 
-    return;
+    const resendResponse = JSON.parse(responseText) as { id?: string };
+
+    console.info("[unyra-contact-resend]", {
+      reference,
+      to,
+      from: resolvedFrom,
+      replyTo,
+      subject,
+      submission: {
+        locale: submission.locale,
+        source: submission.source,
+        company: submission.company,
+        email: submission.email
+      },
+      resend: responseText
+    });
+
+    return {
+      reference,
+      provider: "resend",
+      externalId: resendResponse.id
+    } satisfies DeliveryResult;
   }
 
   console.info("[unyra-contact-placeholder]", {
+    reference,
     subject,
     text,
     submission
   });
+
+  return {
+    reference,
+    provider: "console"
+  } satisfies DeliveryResult;
 }
 
 export async function POST(request: Request) {
@@ -208,7 +346,7 @@ export async function POST(request: Request) {
     payload = (await request.json()) as Record<string, unknown>;
   } catch {
     return NextResponse.json(
-      { ok: false, message: "Invalid payload." },
+      { ok: false, code: "invalid_payload", message: "Invalid payload." },
       { status: 400 }
     );
   }
@@ -220,7 +358,7 @@ export async function POST(request: Request) {
   const errors = createFieldErrors(payload);
   if (Object.keys(errors).length > 0) {
     return NextResponse.json(
-      { ok: false, message: "Validation failed.", errors },
+      { ok: false, code: "validation_failed", message: "Validation failed.", errors },
       { status: 400 }
     );
   }
@@ -228,15 +366,16 @@ export async function POST(request: Request) {
   const submission = normalizePayload(payload);
 
   try {
-    await deliverSubmission(submission);
+    const delivery = await deliverSubmission(submission);
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, reference: delivery.reference });
   } catch (error) {
     console.error("[unyra-contact-error]", error);
 
     return NextResponse.json(
       {
         ok: false,
+        code: "delivery_failed",
         message: "The inquiry could not be delivered."
       },
       { status: 500 }
