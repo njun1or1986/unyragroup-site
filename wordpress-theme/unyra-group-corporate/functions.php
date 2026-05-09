@@ -91,7 +91,7 @@ function unyra_theme_customize_register($wp_customize) {
 		],
 		'unyra_phone_display' => [
 			'label'   => __('Phone / WhatsApp', 'unyra-group-corporate'),
-			'default' => '+1 888 789 843',
+			'default' => '+1 888 789 8843',
 		],
 		'unyra_location' => [
 			'label'   => __('Business Location', 'unyra-group-corporate'),

@@ -163,8 +163,8 @@ export const company = {
     salesEmailLabel: "Sales Email",
     salesEmail: "sales@unyragroup.com",
     phoneLabel: "Phone / WhatsApp",
-    phoneDisplay: "+1 888 789 843",
-    phoneHref: "tel:+1888789843",
+    phoneDisplay: "+1 888 789 8843",
+    phoneHref: "tel:+18887898843",
     locationLabel: "Business Location",
     location: "Orlando, Florida, 32801, US"
   },

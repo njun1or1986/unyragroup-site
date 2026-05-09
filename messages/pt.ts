@@ -821,7 +821,7 @@ const pt: Dictionary = {
       },
       {
         title: "Telefone / WhatsApp",
-        description: "+1 888 789 843"
+        description: "+1 888 789 8843"
       },
       {
         title: "Localização Comercial",

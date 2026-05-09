@@ -56,7 +56,7 @@ function unyra_company_defaults() {
 		'markets'          => ['United States', 'Canada', 'Brazil', 'Chile', 'Argentina', 'Egypt', 'Turkey', 'Europe', 'China'],
 		'company_email'    => get_theme_mod('unyra_company_email', 'sales@unyragroup.com'),
 		'sales_email'      => get_theme_mod('unyra_sales_email', 'sales@unyragroup.com'),
-		'phone_display'    => get_theme_mod('unyra_phone_display', '+1 888 789 843'),
+		'phone_display'    => get_theme_mod('unyra_phone_display', '+1 888 789 8843'),
 		'location'         => get_theme_mod('unyra_location', 'Orlando, Florida, 32801, US'),
 		'logo'             => get_template_directory_uri() . '/assets/images/unyra-logo.png',
 		'icon'             => get_template_directory_uri() . '/assets/images/unyra-icon.svg',

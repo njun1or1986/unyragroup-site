@@ -817,7 +817,7 @@ const en: Dictionary = {
       },
       {
         title: "Phone / WhatsApp",
-        description: "+1 888 789 843"
+        description: "+1 888 789 8843"
       },
       {
         title: "Business Location",
